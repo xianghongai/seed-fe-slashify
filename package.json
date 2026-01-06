@@ -1,0 +1,64 @@
+{
+  "name": "slashify",
+  "version": "1.0.0-alpha.0",
+  "description": "Tiny string utilities to join/trim/ensure leading and trailing separators (default: '/')",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "provenance": false
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "check": "pnpm typecheck && biome check --write",
+    "format": "biome format --write",
+    "lint": "biome check --write",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": [
+    "slash",
+    "slashes",
+    "separator",
+    "string",
+    "join",
+    "trim",
+    "url",
+    "path"
+  ],
+  "author": "xianghongai",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xianghongai/slashify"
+  },
+  "bugs": {
+    "url": "https://github.com/xianghongai/slashify/issues"
+  },
+  "homepage": "https://github.com/xianghongai/slashify#readme",
+  "packageManager": "pnpm@10.23.0",
+  "devDependencies": {
+    "@biomejs/biome": "2.3.10",
+    "jsdom": "^27.4.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.1"
+  }
+}

@@ -1,0 +1,17 @@
+# npm publish ignore patterns (publishing controlled by package.json "files")
+*.log
+.DS_Store
+.github/
+.idea/
+.vscode/
+coverage/
+src/
+test/
+
+.claude/
+.codex/
+.gemini/
+.specify/
+specs/
+AGENTS.md
+CLAUDE.md

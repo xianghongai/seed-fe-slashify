@@ -1,22 +1,22 @@
-import type { SlashInputs, SlashOptions } from './types';
-import { getSeparator, normalizeInputs, trimLeading } from './utils';
+import { joinInternal } from './join';
+import { getSeparator, parseArgs, trimLeading } from './utils';
 
 /**
  * 确保前导分隔符存在
  *
  * @example
- * lpad('foo')        // → '/foo'
- * lpad('/foo')       // → '/foo'
- * lpad('///foo')     // → '/foo'
+ * lpad('foo')            // → '/foo'
+ * lpad('/foo')           // → '/foo'
+ * lpad('///foo')         // → '/foo'
+ * lpad('foo', 'bar')     // → '/foo/bar'
  */
-export function lpad(input: SlashInputs, options?: SlashOptions): string {
+export function lpad(...args: unknown[]): string {
+  const { inputs, options } = parseArgs(args);
   const sep = getSeparator(options);
-  const parts = normalizeInputs(input);
+  const joined = joinInternal(inputs, sep);
 
-  if (parts.length === 0) return '';
+  if (!joined) return '';
 
-  const joined = parts.join(sep);
   const trimmed = trimLeading(joined, sep);
-
   return trimmed ? sep + trimmed : '';
 }

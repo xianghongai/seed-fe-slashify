@@ -1,20 +1,21 @@
-import type { SlashInputs, SlashOptions } from './types';
-import { getSeparator, normalizeInputs, trimLeading } from './utils';
+import { joinInternal } from './join';
+import { getSeparator, parseArgs, trimLeading } from './utils';
 
 /**
  * 移除所有前导分隔符
  *
  * @example
- * ltrim('/foo')      // → 'foo'
- * ltrim('///foo')    // → 'foo'
- * ltrim('foo')       // → 'foo'
+ * ltrim('/foo')          // → 'foo'
+ * ltrim('///foo')        // → 'foo'
+ * ltrim('foo')           // → 'foo'
+ * ltrim('/foo', '/bar')  // → 'foo/bar'
  */
-export function ltrim(input: SlashInputs, options?: SlashOptions): string {
+export function ltrim(...args: unknown[]): string {
+  const { inputs, options } = parseArgs(args);
   const sep = getSeparator(options);
-  const parts = normalizeInputs(input);
+  const joined = joinInternal(inputs, sep);
 
-  if (parts.length === 0) return '';
+  if (!joined) return '';
 
-  const joined = parts.join(sep);
   return trimLeading(joined, sep);
 }

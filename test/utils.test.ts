@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { escapeRegex, getSeparator, normalizeInputs, trimLeading, trimTrailing } from '../src/utils';
+import { escapeRegex, getSeparator, normalizeInputs, parseArgs, trimLeading, trimTrailing } from '../src/utils';
 
 describe('utils', () => {
   describe('getSeparator', () => {
@@ -11,6 +11,10 @@ describe('utils', () => {
     it('使用自定义分隔符', () => {
       expect(getSeparator({ separator: '\\' })).toBe('\\');
       expect(getSeparator({ separator: '://' })).toBe('://');
+    });
+
+    it('空字符串分隔符抛出错误', () => {
+      expect(() => getSeparator({ separator: '' })).toThrow('separator cannot be an empty string');
     });
   });
 
@@ -30,6 +34,45 @@ describe('utils', () => {
     it('普通字符不转义', () => {
       expect(escapeRegex('abc')).toBe('abc');
       expect(escapeRegex('123')).toBe('123');
+    });
+  });
+
+  describe('parseArgs', () => {
+    it('空参数返回空输入', () => {
+      expect(parseArgs([])).toEqual({ inputs: [] });
+    });
+
+    it('单个字符串参数', () => {
+      expect(parseArgs(['foo'])).toEqual({ inputs: ['foo'] });
+    });
+
+    it('多个字符串参数', () => {
+      expect(parseArgs(['foo', 'bar'])).toEqual({ inputs: ['foo', 'bar'] });
+    });
+
+    it('最后一个参数是 options 对象', () => {
+      expect(parseArgs(['foo', { separator: '\\' }])).toEqual({
+        inputs: ['foo'],
+        options: { separator: '\\' },
+      });
+    });
+
+    it('多参数加 options', () => {
+      expect(parseArgs(['foo', 'bar', { separator: '\\' }])).toEqual({
+        inputs: ['foo', 'bar'],
+        options: { separator: '\\' },
+      });
+    });
+
+    it('空对象也视为 options', () => {
+      expect(parseArgs(['foo', {}])).toEqual({
+        inputs: ['foo'],
+        options: {},
+      });
+    });
+
+    it('数组不视为 options', () => {
+      expect(parseArgs([['foo', 'bar']])).toEqual({ inputs: [['foo', 'bar']] });
     });
   });
 
@@ -57,10 +100,22 @@ describe('utils', () => {
       expect(normalizeInputs(['foo', '', 'bar'])).toEqual(['foo', 'bar']);
     });
 
-    it('非字符串类型抛出 TypeError', () => {
-      expect(() => normalizeInputs(123 as unknown as string)).toThrow(TypeError);
-      expect(() => normalizeInputs([123] as unknown as string[])).toThrow(TypeError);
-      expect(() => normalizeInputs({} as unknown as string)).toThrow(TypeError);
+    it('静默过滤非字符串类型', () => {
+      expect(normalizeInputs({} as unknown as string)).toEqual([]);
+      expect(normalizeInputs(['foo', {}, 'bar'] as unknown as string[])).toEqual(['foo', 'bar']);
+    });
+
+    it('数字类型自动转换为字符串', () => {
+      expect(normalizeInputs(123 as unknown as string)).toEqual(['123']);
+      expect(normalizeInputs(['foo', 123, 'bar'] as unknown as string[])).toEqual(['foo', '123', 'bar']);
+      expect(normalizeInputs([1, 2, 3] as unknown as string[])).toEqual(['1', '2', '3']);
+    });
+
+    it('特殊数字值被过滤', () => {
+      expect(normalizeInputs(NaN as unknown as string)).toEqual([]);
+      expect(normalizeInputs(Infinity as unknown as string)).toEqual([]);
+      expect(normalizeInputs(-Infinity as unknown as string)).toEqual([]);
+      expect(normalizeInputs(['foo', NaN, Infinity, 'bar'] as unknown as string[])).toEqual(['foo', 'bar']);
     });
   });
 

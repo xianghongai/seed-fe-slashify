@@ -1,7 +1,7 @@
 {
-  "name": "slashify",
+  "name": "@seed-fe/slashify",
   "version": "1.0.0-alpha.0",
-  "description": "Tiny string utilities to join/trim/ensure leading and trailing separators (default: '/')",
+  "description": "Tiny utilities for trimming, padding, and joining strings with separators",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -47,12 +47,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xianghongai/slashify"
+    "url": "git+https://github.com/xianghongai/seed-fe-slashify"
   },
   "bugs": {
-    "url": "https://github.com/xianghongai/slashify/issues"
+    "url": "https://github.com/xianghongai/seed-fe-slashify/issues"
   },
-  "homepage": "https://github.com/xianghongai/slashify#readme",
+  "homepage": "https://github.com/xianghongai/seed-fe-slashify#readme",
   "packageManager": "pnpm@10.23.0",
   "devDependencies": {
     "@biomejs/biome": "2.3.10",

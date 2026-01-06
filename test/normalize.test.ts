@@ -111,6 +111,11 @@ describe('normalize', () => {
     it('嵌套数组', () => {
       expect(normalize([['/foo'], ['bar', 'baz/']])).toBe('/foo/bar/baz');
     });
+
+    it('variadic 形式', () => {
+      expect(normalize('foo', 'bar')).toBe('foo/bar');
+      expect(normalize('/foo/', '/bar/')).toBe('/foo/bar');
+    });
   });
 
   describe('边界情况', () => {
@@ -130,8 +135,14 @@ describe('normalize', () => {
       expect(normalize('///')).toBe('/');
     });
 
-    it('非字符串抛出 TypeError', () => {
-      expect(() => normalize(123 as unknown as string)).toThrow(TypeError);
+    it('非字符串静默过滤', () => {
+      expect(normalize({} as unknown as string)).toBe('');
+      expect(normalize(['/foo', {} as unknown as string, 'bar/'])).toBe('/foo/bar');
+    });
+
+    it('数字自动转换', () => {
+      expect(normalize(123 as unknown as string)).toBe('123');
+      expect(normalize(['/foo', 123 as unknown as string, 'bar/'])).toBe('/foo/123/bar');
     });
   });
 
@@ -144,6 +155,10 @@ describe('normalize', () => {
     it('使用多字符分隔符', () => {
       // 自定义分隔符不保留前缀
       expect(normalize('://foo://://bar://', { separator: '://' })).toBe('foo://bar');
+    });
+
+    it('variadic + options', () => {
+      expect(normalize('foo', 'bar', { separator: '\\' })).toBe('foo\\bar');
     });
   });
 });

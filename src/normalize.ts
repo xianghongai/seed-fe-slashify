@@ -1,38 +1,27 @@
-import type { SlashInputs, SlashOptions } from './types';
-import { escapeRegex, getSeparator, normalizeInputs, trimLeading, trimTrailing } from './utils';
+import { PRESERVED_PREFIXES } from './constants';
+import { escapeRegex, getSeparator, normalizeInputs, parseArgs, trimLeading, trimTrailing } from './utils';
 
 /**
- * 检测有意义的前缀的正则模式（仅用于默认分隔符 '/'）
- * 顺序很重要：更具体的模式要放在前面
- */
-const PRESERVED_PREFIXES = [
-  /^\.\.\//, // ../
-  /^\.\//, // ./
-  /^~\//, // ~/
-  /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/\/?/, // 协议:// 或 协议:/// (http://, https://, file:///, etc.)
-  /^\/\/(?!\/)/, // // 后面紧跟非斜杠字符 (协议相对 URL)
-  /^\//, // / (绝对路径)
-];
-
-/**
- * 智能规范化路径
+ * 智能规范化路径（不仅仅是 trim）
  * - 移除尾部分隔符
  * - 保留有意义的前缀 (/, //, ./, ../, ~/, 协议://)
  * - 规范化多余的分隔符
  *
  * @example
- * normalize('foo/')          // → 'foo'
- * normalize('/foo/')         // → '/foo'
- * normalize('//cdn.com/')    // → '//cdn.com'
- * normalize('./foo/')        // → './foo'
- * normalize('../foo/')       // → '../foo'
- * normalize('~/foo/')        // → '~/foo'
- * normalize('///foo/')       // → '/foo'
- * normalize('https://a.com/')// → 'https://a.com'
+ * normalize('foo/')              // → 'foo'
+ * normalize('/foo/')             // → '/foo'
+ * normalize('//cdn.com/')        // → '//cdn.com'
+ * normalize('./foo/')            // → './foo'
+ * normalize('../foo/')           // → '../foo'
+ * normalize('~/foo/')            // → '~/foo'
+ * normalize('///foo/')           // → '/foo'
+ * normalize('https://a.com/')    // → 'https://a.com'
+ * normalize('foo', 'bar')        // → 'foo/bar'
  */
-export function normalize(input: SlashInputs, options?: SlashOptions): string {
+export function normalize(...args: unknown[]): string {
+  const { inputs, options } = parseArgs(args);
   const sep = getSeparator(options);
-  const parts = normalizeInputs(input);
+  const parts = normalizeInputs(inputs);
 
   if (parts.length === 0) return '';
 

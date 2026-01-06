@@ -29,6 +29,11 @@ describe('rpad', () => {
     it('嵌套数组', () => {
       expect(rpad([['foo'], ['bar', 'baz']])).toBe('foo/bar/baz/');
     });
+
+    it('variadic 形式', () => {
+      expect(rpad('foo', 'bar')).toBe('foo/bar/');
+      expect(rpad('/foo/', '/bar/')).toBe('/foo/bar/');
+    });
   });
 
   describe('边界情况', () => {
@@ -42,8 +47,14 @@ describe('rpad', () => {
       expect(rpad(['foo', null, 'bar'])).toBe('foo/bar/');
     });
 
-    it('非字符串抛出 TypeError', () => {
-      expect(() => rpad(123 as unknown as string)).toThrow(TypeError);
+    it('非字符串静默过滤', () => {
+      expect(rpad({} as unknown as string)).toBe('');
+      expect(rpad(['foo', {} as unknown as string, 'bar'])).toBe('foo/bar/');
+    });
+
+    it('数字自动转换', () => {
+      expect(rpad(123 as unknown as string)).toBe('123/');
+      expect(rpad(['foo', 123 as unknown as string, 'bar'])).toBe('foo/123/bar/');
     });
   });
 
@@ -56,6 +67,10 @@ describe('rpad', () => {
     it('使用多字符分隔符', () => {
       expect(rpad('foo', { separator: '://' })).toBe('foo://');
       expect(rpad('foo://://', { separator: '://' })).toBe('foo://');
+    });
+
+    it('variadic + options', () => {
+      expect(rpad('foo', 'bar', { separator: '\\' })).toBe('foo\\bar\\');
     });
   });
 });

@@ -1,3 +1,4 @@
+export { DEFAULT_SEPARATOR, PRESERVED_PREFIXES } from './constants';
 export { join } from './join';
 export { lpad } from './lpad';
 export { ltrim } from './ltrim';

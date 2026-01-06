@@ -1,20 +1,21 @@
-import type { SlashInputs, SlashOptions } from './types';
-import { getSeparator, normalizeInputs, trimTrailing } from './utils';
+import { joinInternal } from './join';
+import { getSeparator, parseArgs, trimTrailing } from './utils';
 
 /**
  * 移除所有尾部分隔符
  *
  * @example
- * rtrim('foo/')      // → 'foo'
- * rtrim('foo///')    // → 'foo'
- * rtrim('foo')       // → 'foo'
+ * rtrim('foo/')          // → 'foo'
+ * rtrim('foo///')        // → 'foo'
+ * rtrim('foo')           // → 'foo'
+ * rtrim('foo/', 'bar/')  // → 'foo/bar'
  */
-export function rtrim(input: SlashInputs, options?: SlashOptions): string {
+export function rtrim(...args: unknown[]): string {
+  const { inputs, options } = parseArgs(args);
   const sep = getSeparator(options);
-  const parts = normalizeInputs(input);
+  const joined = joinInternal(inputs, sep);
 
-  if (parts.length === 0) return '';
+  if (!joined) return '';
 
-  const joined = parts.join(sep);
   return trimTrailing(joined, sep);
 }

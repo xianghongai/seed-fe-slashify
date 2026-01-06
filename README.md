@@ -1,23 +1,25 @@
-# slashify
+# @seed-fe/slashify
 
-Tiny utilities for trimming, padding, and joining strings with separators.
+Tiny utilities for trimming, padding, and joining strings with separators (default: `/`).
+
+This package is intentionally **not** a filesystem path library; it only manipulates separator characters at string boundaries (plus join boundaries when combining multiple inputs).
 
 ## Installation
 
 ```bash
-npm install slashify
+pnpm add @seed-fe/slashify
 # or
-pnpm add slashify
+npm install @seed-fe/slashify
 # or
-yarn add slashify
+yarn add @seed-fe/slashify
 ```
 
 ## Usage
 
 ```typescript
-import { ltrim, rtrim, trim, lpad, rpad, pad, join, normalize } from 'slashify';
+import { ltrim, rtrim, trim, lpad, rpad, pad, join, normalize } from '@seed-fe/slashify';
 
-// 移除分隔符
+// Remove separators
 ltrim('/foo')         // → 'foo'
 ltrim('///foo')       // → 'foo'
 rtrim('foo/')         // → 'foo'
@@ -25,7 +27,7 @@ rtrim('foo///')       // → 'foo'
 trim('/foo/')         // → 'foo'
 trim('///foo///')     // → 'foo'
 
-// 确保分隔符
+// Ensure separators
 lpad('foo')           // → '/foo'
 lpad('/foo')          // → '/foo'
 rpad('foo')           // → 'foo/'
@@ -33,81 +35,144 @@ rpad('foo/')          // → 'foo/'
 pad('foo')            // → '/foo/'
 pad('/foo/')          // → '/foo/'
 
-// 拼接
-join(['/foo/', '/bar/'])  // → '/foo/bar/'
+// Join (supports variadic and array forms)
+join('foo', 'bar')        // → 'foo/bar'
+join('/foo/', '/bar/')    // → '/foo/bar/'
 join(['foo', 'bar'])      // → 'foo/bar'
 join(['/foo', 'bar/'])    // → '/foo/bar/'
 
-// 智能规范化
+// Variadic multi-argument joining
+trim('/foo', 'bar/')       // → 'foo/bar'
+lpad('api', 'v1', 'users') // → '/api/v1/users'
+rpad('foo', 'bar', 'baz')  // → 'foo/bar/baz/'
+
+// Numeric ID auto-conversion
+join('users', 123, 'profile')  // → 'users/123/profile'
+join('/api/v1', 'posts', 456)  // → '/api/v1/posts/456'
+
+// Smart normalization
 normalize('foo/')              // → 'foo'
-normalize('/foo/')             // → '/foo'       (保留绝对路径前缀)
-normalize('//cdn.com/')        // → '//cdn.com'  (保留协议相对前缀)
-normalize('./foo/')            // → './foo'      (保留相对路径前缀)
-normalize('../foo/')           // → '../foo'     (保留上级路径前缀)
-normalize('~/foo/')            // → '~/foo'      (保留主目录前缀)
-normalize('https://a.com/')    // → 'https://a.com' (保留 URL 协议)
-normalize('foo//bar///')       // → 'foo/bar'   (规范化中间多余斜杠)
+normalize('/foo/')             // → '/foo'       (preserves absolute path prefix)
+normalize('//cdn.com/')        // → '//cdn.com'  (preserves protocol-relative prefix)
+normalize('./foo/')            // → './foo'      (preserves relative path prefix)
+normalize('../foo/')           // → '../foo'     (preserves parent directory prefix)
+normalize('~/foo/')            // → '~/foo'      (preserves home directory prefix)
+normalize('https://a.com/')    // → 'https://a.com' (preserves URL protocol)
+normalize('foo//bar///')       // → 'foo/bar'   (normalizes redundant slashes)
 ```
 
 ## API
 
-### 输入类型
+### Input Types
 
-所有函数都支持灵活的输入形式：
+All functions support flexible input forms:
 
 ```typescript
-// 单个字符串
+// Single string
 ltrim('/foo')
 
-// 数组
+// Variadic (multiple arguments)
+join('foo', 'bar', 'baz')
+trim('/foo', 'bar/')
+
+// Array
 ltrim(['/foo', 'bar'])
 
-// 嵌套数组
+// Nested arrays
 ltrim([['/foo'], ['bar', 'baz']])
 
-// null/undefined 会被自动过滤
-ltrim(['/foo', null, 'bar'])  // → 'foo/bar'
+// null/undefined/empty strings are automatically filtered
+ltrim(['/foo', null, '', 'bar'])  // → 'foo/bar'
+
+// Numbers are automatically converted to strings
+join(['foo', 123, 'bar'])  // → 'foo/123/bar'
+join('users', 456)         // → 'users/456'
+
+// Other non-string types are silently filtered
+join(['foo', {}, 'bar'])   // → 'foo/bar'
 ```
 
-### 选项
+### Options
 
-所有函数都接受可选的 `options` 参数：
+All functions accept an optional `options` parameter (as the last argument):
 
 ```typescript
 interface SlashOptions {
-  separator?: string;  // 默认 '/'
+  separator?: string;  // default '/'
 }
 
-// 使用自定义分隔符
+// Using custom separator
 ltrim('\\foo', { separator: '\\' })  // → 'foo'
+join('foo', 'bar', { separator: '::' })  // → 'foo::bar'
 join(['foo', 'bar'], { separator: '::' })  // → 'foo::bar'
 ```
 
-### 函数列表
+### Function List
 
-| 函数 | 功能 | 示例 |
-|------|------|------|
-| `ltrim` | 移除所有前导分隔符 | `ltrim('///foo')` → `'foo'` |
-| `rtrim` | 移除所有尾部分隔符 | `rtrim('foo///')` → `'foo'` |
-| `trim` | 移除所有首尾分隔符 | `trim('///foo///')` → `'foo'` |
-| `lpad` | 确保前导分隔符 | `lpad('foo')` → `'/foo'` |
-| `rpad` | 确保尾部分隔符 | `rpad('foo')` → `'foo/'` |
-| `pad` | 确保首尾分隔符 | `pad('foo')` → `'/foo/'` |
-| `join` | 拼接并保留首尾特征 | `join(['/foo/', '/bar/'])` → `'/foo/bar/'` |
-| `normalize` | 智能规范化路径 | `normalize('./foo/')` → `'./foo'` |
+| Function | Description | Example |
+|----------|-------------|---------|
+| `ltrim` | Remove all leading separators | `ltrim('///foo')` → `'foo'` |
+| `rtrim` | Remove all trailing separators | `rtrim('foo///')` → `'foo'` |
+| `trim` | Remove all leading and trailing separators | `trim('///foo///')` → `'foo'` |
+| `lpad` | Ensure leading separator | `lpad('foo')` → `'/foo'` |
+| `rpad` | Ensure trailing separator | `rpad('foo')` → `'foo/'` |
+| `pad` | Ensure leading and trailing separators | `pad('foo')` → `'/foo/'` |
+| `join` | Join and preserve leading/trailing characteristics | `join('foo', 'bar')` → `'foo/bar'` |
+| `normalize` | Smart path normalization | `normalize('./foo/')` → `'./foo'` |
 
-### normalize 保留的前缀
+### Prefixes Preserved by normalize
 
-`normalize` 函数会保留以下有意义的前缀：
+The `normalize` function preserves the following meaningful prefixes:
 
-| 前缀 | 含义 | 示例 |
-|------|------|------|
-| `/` | 绝对路径 | `/foo/` → `/foo` |
-| `//` | 协议相对 URL | `//cdn.com/` → `//cdn.com` |
-| `./` | 当前目录 | `./foo/` → `./foo` |
-| `../` | 上级目录 | `../foo/` → `../foo` |
-| `~/` | 用户主目录 | `~/foo/` → `~/foo` |
-| `x://` | URL 协议 | `https://a.com/` → `https://a.com` |
+| Prefix | Meaning | Example |
+|--------|---------|---------|
+| `/` | Absolute path | `/foo/` → `/foo` |
+| `//` | Protocol-relative URL | `//cdn.com/` → `//cdn.com` |
+| `./` | Current directory | `./foo/` → `./foo` |
+| `../` | Parent directory | `../foo/` → `../foo` |
+| `~/` | User home directory | `~/foo/` → `~/foo` |
+| `x://` | URL protocol | `https://a.com/` → `https://a.com` |
+
+### Important Behavior Notes
+
+#### Pure Separator Input
+
+When input contains only separators (e.g., `/`, `//`, `///`), each function behaves as follows:
+
+| Function | Input `/` | Input `//` | Description |
+|----------|-----------|------------|-------------|
+| `trim` | `''` | `''` | Empty after removing separators |
+| `ltrim` | `''` | `''` | Empty after removing separators |
+| `rtrim` | `''` | `''` | Empty after removing separators |
+| `lpad` | `''` | `''` | No actual content to pad |
+| `rpad` | `''` | `''` | No actual content to pad |
+| `pad` | `''` | `''` | No actual content to pad |
+| `join` | `/` | `//` | Preserves leading/trailing characteristics |
+| `normalize` | `/` | `//` | **Preserves meaningful prefix** |
+
+**Key Difference**: `normalize` recognizes and preserves meaningful path prefixes, while other functions focus on separator operations.
+
+#### When to Use normalize
+
+If you need to preserve semantic path prefixes (such as root `/`, protocol-relative `//`, relative paths `./` `../`, home directory `~/`), use `normalize` instead of `trim`.
+
+```typescript
+// Need to preserve root directory semantics
+normalize('/')     // → '/'
+trim('/')          // → ''
+
+// Need to preserve protocol-relative prefix
+normalize('//')    // → '//'
+trim('//')         // → ''
+```
+
+## Not-Related projects
+
+- <https://www.npmjs.com/package/pathe>
+- <https://www.npmjs.com/package/upath>
+- <https://www.npmjs.com/package/path-browserify>
+- <https://www.npmjs.com/package/slash>
+- <https://www.npmjs.com/package/normalize-path>
 
 ## License
 
